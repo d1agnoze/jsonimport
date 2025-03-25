@@ -17,11 +17,14 @@ const (
 	jsonRPCVersion = `"2.0"`
 
 	// lsp methods
-	initialize     method = "initialize"
-	methodShutdown method = "shutdown"
-	methodExit     method = "exit"
+	methodInitialize             method = "initialize"
+	methodInitialized            method = "initialized"
+	methodTextDocumentCompletion method = "textDocument/completion"
+	methodShutdown               method = "shutdown"
+	methodExit                   method = "exit"
 
-	textDocumentDidOpen method = "textDocument/didOpen"
+	textDocumentDidOpen    method = "textDocument/didOpen"
+	textDocumentCompletion method = "textDocument/completion"
 )
 
 var (
@@ -192,7 +195,7 @@ func (r *BaseReader) Read() ([]byte, error) {
 		line, err := r.r.ReadBytes('\n')
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				return nil, io.EOF
+                                return nil, fmt.Errorf("End of file error:%w", err)
 			}
 			return nil, fmt.Errorf("lsp: read header: %w", err)
 		}
@@ -293,4 +296,8 @@ func assertOnlyOne(message string, values ...bool) {
 	if count != 1 {
 		panic(message)
 	}
+}
+
+func (s RequestMessage) String() string {
+	return fmt.Sprintf("request_id=%#v method=%s", s.ID, s.Method)
 }
